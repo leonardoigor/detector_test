@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width= , initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/ml5@0.5.0/dist/ml5.min.js"></script>
+
+</head>
+
+<body>
+    <canvas id="c"></canvas>
+    <video style="opacity: 0;" id="v" playsinline autoplay muted"></video>
+    <style>
+        canvas,
+        html,
+        body,
+        video {
+            height: 100vh;
+            width: 100vw;
+        }
+    </style>
+</body>
+<script>
+    let obj2
+    const canvas = document.getElementById('c')
+    const context = canvas.getContext('2d')
+    async function dd() {
+
+        function modelReady() {
+            console.log("model Ready!")
+            status = true;
+        }
+        const video = document.getElementById('v')
+        const model = ml5.YOLO(video, modelReady)
+
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+            audio: false,
+            video: {
+                facingMode: 'environment'
+            }
+        })
+        console.log(stream);
+
+        video.srcObject = stream
+        canvas.width = document.body.clientWidth
+        canvas.height = document.body.clientHeight
+        async function predict() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            context.drawImage(video, 0, 0)
+
+            // requestAnimationFrame(predict)
+            model.detect(function (err, results) {
+
+                console.log('pre', err, results);
+                if (!err) {
+                    for (let i = 0; i < results.length; i++) {
+                        let obj = results[i];
+                        obj2 = obj
+                        canvas.fillStyle = "red";
+                        // stroke(0, 255, 0)
+                        // strokeWeight(4)
+                        // noFill()
+                        // rect(obj.x, obj.y, obj.width, obj.height)
+                        // noStroke()
+                        // fill(255);
+                        // textSize(24);
+                        // text(obj.label, obj.x, obj.y + 24)
+
+                        // context.beginPath();
+                        context.rect(obj.x, obj.y, obj.width, obj.height);
+                        context.stroke();
+
+                        // ctx.font = "30px Arial";
+                        context.fillText(obj.label, obj.x, obj.y + 24);
+                    }
+                }
+            });
+        }
+        function getPercent(p, n) {
+            return p * n / 100
+        }
+        setInterval(() => {
+            predict()
+        }, 2000);
+        function goDetections(error, results) {
+            if (error) {
+                console.log(error);
+            }
+            else {
+                console.log(results);
+                // for (let i = 0; i < results.length; i++) {
+                //     let obj = results[i];
+                //     stroke(0, 255, 0)
+                //     strokeWeight(4)
+                //     noFill()
+                //     rect(obj.x, obj.y, obj.width, obj.height)
+                //     noStroke()
+                //     fill(255);
+                //     textSize(24);
+                //     text(obj.label, obj.x, obj.y + 24)
+                // }
+            }
+
+        }
+
+    }
+</script>
+
+</html>
